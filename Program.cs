@@ -5,6 +5,18 @@ class Program
 {
     static void Main(string[] args)
     {
+        //Hitta och läs från fil om den finns
+        if (File.Exists("contacts.txt"))
+        {
+            Console.WriteLine("Läser in kontakter från fil:");
+            FileHandler.ReadFromFile();
+        }
+        else
+        {
+            Console.WriteLine("Ingen kontaktfil hittades, startar med tom adressbok.");
+        }
+
+
         // Skapa en ny adressbok
         AddressBook addressBook = new AddressBook();
 
