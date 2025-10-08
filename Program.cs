@@ -69,6 +69,9 @@ public class Program
                 break;
             case "2":
                 // Sök kontakt
+                Console.WriteLine("Enter search text (name or city): ");
+                string searchtext = Console.ReadLine();
+                addressBook.SearchContact(searchtext);
                 break;
             case "3":
                 // Uppdatera kontakt (anropa UpdateContact i AdressBook)

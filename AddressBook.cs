@@ -55,6 +55,24 @@ public class AddressBook
 
         resultat = ContactsList.Where(k => k.Name.ToLower().Contains(searchtext.ToLower()) || k.City.ToLower().Contains(searchtext.ToLower())).ToList();
 
+        if (resultat.Count == 0)
+        {
+            Console.WriteLine("No contacts found matching your search.");
+        }
+        else
+        {
+            FileHandler fileHandler = new FileHandler();
+
+            Console.WriteLine();
+            Console.WriteLine("Search results:");
+
+            foreach (var contact in resultat)
+            {
+                Console.WriteLine(fileHandler.ToText(contact));// Använder Hannas metod för att göra om en Contact till en sträng
+
+            }
+        }
+
         return resultat;
 
     }
