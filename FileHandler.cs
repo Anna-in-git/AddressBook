@@ -20,17 +20,21 @@ namespace AddressBookProject
             }
         }
 
-        //FromString - Läser ut objektet från en rad i txt-filen
-        public static void ReadFromFile()
+        //ReadFromFile - hämtar ut en lista med kontakter
+        public List<Contact> ReadFromFile()
         {
             using (StreamReader reader = new StreamReader("contacts.txt"))
             {
+                contactsList = new List<Contact>();//instansiera listan
+
                 string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    Console.WriteLine(line);
+                    contactsList.Add(FromText(line));//lägger till varje kontakt i listan
                 }
             }
+
+            return contactsList;
         }
 
         //FromText - Läser ut objektet från en rad i txt-filen
