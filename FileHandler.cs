@@ -4,37 +4,42 @@ namespace AddressBookProject
 {
     public class FileHandler
     {
+        
 
         //ToText - Gör om data så det kan skrivas på en rad i txt-filen
-        public static string ToText(Contact contact)
+        public string ToText(Contact contact)
         {
             return $"{contact.Name},{contact.StreetAddress},{contact.PostalCode},{contact.City},{contact.Phone},{contact.Email}";
         }
 
-        public static void WriteToFile(Contact contact)
+        public void WriteToFile(Contact contact)
         {
             using (StreamWriter writer = new StreamWriter("contacts.txt", append: true))
             {
 
-                writer.WriteLine(FileHandler.ToText(contact));
+                writer.WriteLine(ToText(contact));
             }
         }
 
         //FromString - Läser ut objektet från en rad i txt-filen
-        public static void ReadFromFile()
+        public List<Contact> ReadFromFile()// returnar en lista med kontakter
         {
+            List<Contact> ContactsList = new List<Contact>();//instansiera listan
+
             using (StreamReader reader = new StreamReader("contacts.txt"))
             {
                 string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    Console.WriteLine(line);
+                    ContactsList.Add(FromText(line));//lägger till varje kontakt i listan
                 }
             }
+
+            return ContactsList;
         }
 
-        //FromText - Läser ut objektet från en rad i txt-filen
-        public static Contact FromText(string line)
+        //FromText - Läser ut objektet från en rad i txt-filen och gör om till ett Contact-objekt
+        public Contact FromText(string line)
         {
             string[] parts = line.Split(',');
             return new Contact
