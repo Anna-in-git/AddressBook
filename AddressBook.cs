@@ -60,24 +60,71 @@ namespace ContactsBook
 
         }
 
-        public void DeleteContact(string name)
+        //Method to update existing contact
+        public static void UpdateContact(List<Contact> contacts)
         {
-            // Försök hitta en kontakt i listan som matchar det angivna namnet (ignorerar stora/små bokstäver)
-            var contactToRemove = ContactsList
-                .FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            Console.Write("Enter the name of the contact to update: ");
+            string nameToUpdate = Console.ReadLine();
 
-            // Om kontakten hittades, ta bort den
-            if (contactToRemove != null)
+            var contact = contacts.FirstOrDefault(c => 
+                c.Name.Equals(nameToUpdate, StringComparison.OrdinalIgnoreCase));
+
+            if (contact == null)
             {
-                ContactsList.Remove(contactToRemove);
-                //MessageBox.Show($"Kontakten '{name}' har tagits bort.");
+                Console.WriteLine("Contact not found.");
+                return;
             }
-            else
-            {
-                // Om ingen kontakt hittades, visa ett felmeddelande
-                //MessageBox.Show($"Ingen kontakt med namnet '{name}' hittades.");
-            }
+
+            Console.WriteLine($"Updating contact: {contact.Name}");
+
+            Console.Write("Enter new name (leave blank to keep current): ");
+            string newName = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newName))
+                contact.Name = newName;
+
+            Console.Write("Enter new street address (leave blank to keep current): ");
+            string newAddress = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newAddress))
+                contact.StreetAddress = newAddress;
+
+            Console.Write("Enter new postal code (leave blank to keep current): ");
+            string newPostal = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newPostal))
+                contact.PostalCode = newPostal;
+
+            Console.Write("Enter new city (leave blank to keep current): ");
+            string newCity = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newCity))
+                contact.City = newCity;
+
+            Console.Write("Enter new phone (leave blank to keep current): ");
+            string newPhone = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newPhone))
+                contact.Phone = newPhone;
+
+            Console.Write("Enter new email (leave blank to keep current): ");
+            string newEmail = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newEmail))
+                contact.Email = newEmail;
+
+            Console.WriteLine("Contact updated successfully!");
         }
+
+public bool DeleteContact(string name)
+{
+    // Försök hitta en kontakt i listan som matchar det angivna namnet (ignorerar stora/små bokstäver)
+    var contactToRemove = ContactsList
+        .FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    // Om kontakten hittades, ta bort den
+    if (contactToRemove != null)
+    {
+        ContactsList.Remove(contactToRemove);
+        return true; // successfully deleted
+    }
+
+    return false; // contact not found
+    }
     }
 
 }

@@ -1,0 +1,3 @@
+Anna Andersson,Storgatan 1,11122,Stockholm,0701234567,anna@example.com
+Björn Svensson,Lillgatan 5,22233,Göteborg,0737654321,bjorn@example.com
+Clara Nilsson,Högvägen 10,33344,Malmö,0721112233,clara@example.com
