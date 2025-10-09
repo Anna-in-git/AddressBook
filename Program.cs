@@ -1,100 +1,109 @@
-﻿using AddressBookProject;
+﻿using System;
+using System.IO;
+using AddressBookProject;
 
 public class Program
 {
     static void Main(string[] args)
     {
-        // Skapa en ny adressbok
-        AddressBook addressBook = new AddressBook();
+        var addressBook = new AddressBook();
+        var fileHandler = new FileHandler();
 
-        //Hitta och läs från fil om den finns
-        // Kontrollera om filen finns, annars skapa den
         if (!File.Exists("contacts.txt"))
         {
-            using (File.Create("contacts.txt")) { } // Skapar en tom fil
+            using (File.Create("contacts.txt")) { }
             Console.WriteLine("Ingen kontaktfil hittades, startar med tom adressbok.");
         }
         else
         {
             Console.WriteLine("Läser in kontakter från fil:");
-            FileHandler fileHandler = new FileHandler();
-            addressBook.ContactsList = fileHandler.ReadFromFile(); // Anropar metoden för att läsa från fil och fyller adressboken
+            addressBook.ContactsList = fileHandler.ReadFromFile();
+            
+            // CHANGE: normalisera dubbletter som redan finns i filen
+            int removed = addressBook.NormalizeDuplicates();
+            if (removed > 0)
+            {
+                fileHandler.SaveAll(addressBook.ContactsList);
+                Console.WriteLine($"Rensade {removed} dubblett(er) vid start.");
+            }
         }
 
-        //Huvudmeny
-
-        // 1. Lägg till kontakt
-        // 2. Sök kontakt
-        // 3. Ta bort kontakt
-        // 4. Uppdatera kontakt
-        // 5. Visa alla kontakter
-        // 6. Avsluta
-
-        Console.WriteLine("Välkommen till Adressboken!");
-        Console.WriteLine("---------------------------");
-        Console.WriteLine();
-        Console.WriteLine();
-
-        Console.WriteLine("1. Add contact");
-        Console.WriteLine("2. Search contact");
-        Console.WriteLine("3. Update contact");
-        Console.WriteLine("4. Delete contact");
-        Console.WriteLine("5. Show all contacts");
-        Console.WriteLine("6. Exit");
-        Console.WriteLine();
-        Console.Write("Choose an option (1-6): ");
-
-        string choice = Console.ReadLine();
-
-        switch (choice)
+        while (true)
         {
-            case "1":
-                // Lägg till en ny kontakt
-                Contact newContact = new Contact(); // Skapa en ny kontakt
-                Console.Write("Name: ");
-                newContact.Name = Console.ReadLine();
-                Console.Write("Street Address: ");
-                newContact.StreetAddress = Console.ReadLine();
-                Console.Write("Postal Code: ");
-                newContact.PostalCode = Console.ReadLine();
-                Console.Write("City: ");
-                newContact.City = Console.ReadLine();
-                Console.Write("Phone: ");
-                newContact.Phone = Console.ReadLine();
-                Console.Write("Email: ");
-                newContact.Email = Console.ReadLine();
-                addressBook.AddContact(newContact);
-                Console.WriteLine("Contact added!");
+            Console.WriteLine("Välkommen till Adressboken!");
+            Console.WriteLine("---------------------------\n");
+            Console.WriteLine("1. Lägg till/uppdatera kontakt"); // CHANGE: tydligt att det är upsert
+            Console.WriteLine("2. Sök kontakt (namn/postort)");
+            Console.WriteLine("3. Uppdatera kontakt (via namn)");
+            Console.WriteLine("4. Ta bort kontakt");
+            Console.WriteLine("5. Visa alla kontakter");
+            Console.WriteLine("6. Utgång\n"); // CHANGE: tog bort felskrivet 'Bara'
+            Console.Write("Välj ett alternativ (1-6): ");
 
-                break;
-            case "2":
-                // Sök kontakt
-                Console.WriteLine("Enter search text (name or city): ");
-                string searchtext = Console.ReadLine();
-                addressBook.SearchContact(searchtext);
-                break;
-            case "3":
-                // Uppdatera kontakt (anropa UpdateContact i AdressBook)
-                break;
-            case "4":
-                // Ta bort kontakt
-                break;
-            case "5":
-                // Visa alla kontakter
-                break;
-            case "6":
-                // Avsluta
-                break;
-            default:
-                Console.WriteLine("Ogiltigt val, försök igen.");
-                break;
+            string choice = Console.ReadLine();
+            Console.WriteLine();
 
+            switch (choice)
+            {
+                case "1":
+                    var nc = new Contact();
+                    Console.Write("Namn: ");             nc.Name = Console.ReadLine();
+                    Console.Write("Gatuadress: ");       nc.StreetAddress = Console.ReadLine();
+                    Console.Write("Postnummer: ");       nc.PostalCode = Console.ReadLine();
+                    Console.Write("Postort/Stad: ");     nc.City = Console.ReadLine();
+                    Console.Write("Telefon: ");          nc.Phone = Console.ReadLine();
+                    Console.Write("E-post: ");           nc.Email = Console.ReadLine();
 
+                    // CHANGE: använd Upsert, inte AddContact+WriteToFile
+                    bool wasUpdate = addressBook.UpsertContact(nc);
+                    if (wasUpdate)
+                    {
+                        fileHandler.SaveAll(addressBook.ContactsList); // skriv om filen vid uppdatering
+                        Console.WriteLine("Kontakt uppdaterad.");
+                    }
+                    else
+                    {
+                        fileHandler.WriteToFile(nc); // ny kontakt -> append
+                        Console.WriteLine("Kontakt tillagd.");
+                    }
+                    break;
+
+                case "2":
+                    Console.Write("Ange söktext (namn eller postort): ");
+                    addressBook.SearchContact(Console.ReadLine());
+                    break;
+
+                case "3":
+                    AddressBook.UpdateContact(addressBook.ContactsList);
+                    fileHandler.SaveAll(addressBook.ContactsList); // spegla ändringar
+                    break;
+
+                case "4":
+                    Console.Write("Ange namnet på den kontakt som ska raderas: ");
+                    var nameToDelete = Console.ReadLine();
+                    bool deleted = addressBook.DeleteContact(nameToDelete);
+                    Console.WriteLine(deleted ? "Kontakt borttagen." : "Kontakten hittades inte.");
+                    if (deleted) fileHandler.SaveAll(addressBook.ContactsList);
+                    break;
+
+                case "5":
+                    foreach (var c in addressBook.ContactsList)
+                        Console.WriteLine(fileHandler.ToText(c));
+                    break;
+
+                case "6":
+                    Console.WriteLine("\nKlart! Tryck på valfri tangent för att avsluta.");
+                    Console.ReadKey();
+                    return;
+
+                default:
+                    Console.WriteLine("Ogiltigt val, försök igen.");
+                    break;
+            }
+
+            Console.WriteLine("\nTryck på valfri tangent för att fortsätta...");
+            Console.ReadKey(true);
+            Console.Clear();
         }
-
-
-
-        Console.WriteLine("\nKlart! Tryck på valfri tangent för att avsluta.");
-        Console.ReadKey();
     }
 }

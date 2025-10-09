@@ -1,50 +1,63 @@
-﻿namespace AddressBookProject;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
-public class FileHandler
+namespace AddressBookProject
 {
-    //ToText - Gör om data så det kan skrivas på en rad i txt-filen
-    public string ToText(Contact contact)
+    public class FileHandler
     {
-        return $"{contact.Name},{contact.StreetAddress},{contact.PostalCode},{contact.City},{contact.Phone},{contact.Email}";
-    }
-
-    public void WriteToFile(Contact contact)
-    {
-        using (StreamWriter writer = new StreamWriter("contacts.txt", append: true))
+        public string ToText(Contact contact)
         {
-
-            writer.WriteLine(ToText(contact));
+            // Oförändrad
+            return $"{contact.Name},{contact.StreetAddress},{contact.PostalCode},{contact.City},{contact.Phone},{contact.Email}";
         }
-    }
 
-    //ReadFromFile - hämtar ut en lista med kontakter
-    public List<Contact> ReadFromFile()
-    {
-        List<Contact> contactsList = new List<Contact>(); // Deklarera och instansiera lista
-
-        using (StreamReader reader = new StreamReader("contacts.txt"))
+        public void WriteToFile(Contact contact)
         {
-            string? line;
-            while ((line = reader.ReadLine()) != null)
+            // Oförändrad: används när vi lägger NY post (inte update)
+            using (StreamWriter writer = new StreamWriter("contacts.txt", append: true))
+                writer.WriteLine(ToText(contact));
+        }
+
+        public void SaveAll(List<Contact> contacts)
+        {
+            // Oförändrad: skriv om hela filen (efter update/delete/normalize)
+            using (StreamWriter writer = new StreamWriter("contacts.txt", append: false))
+                foreach (var c in contacts)
+                    writer.WriteLine(ToText(c));
+        }
+
+        public List<Contact> ReadFromFile()
+        {
+            var contactsList = new List<Contact>();
+            using (StreamReader reader = new StreamReader("contacts.txt"))
             {
-                contactsList.Add(FromText(line));
+                string? line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var c = FromText(line);
+                    if (c != null) contactsList.Add(c);
+                }
             }
+            return contactsList;
         }
-        return contactsList;
-    }
 
-    //FromText - Läser ut objektet från en rad i txt-filen
-    public Contact FromText(string line)
-    {
-        string[] parts = line.Split(',');
-        return new Contact
+        public Contact? FromText(string line)
         {
-            Name = parts[0],
-            StreetAddress = parts[1],
-            PostalCode = parts[2],
-            City = parts[3],
-            Phone = parts[4],
-            Email = parts[5]
-        };
+            if (string.IsNullOrWhiteSpace(line)) return null;
+            string[] parts = line.Split(',');
+            if (parts.Length < 6) return null;
+
+            // CHANGE: Trimma alla fält vid inläsning för stabil matchning
+            return new Contact
+            {
+                Name          = parts[0].Trim(),
+                StreetAddress = parts[1].Trim(),
+                PostalCode    = parts[2].Trim(),
+                City          = parts[3].Trim(),
+                Phone         = parts[4].Trim(),
+                Email         = parts[5].Trim()
+            };
+        }
     }
 }
